@@ -63,7 +63,7 @@ about_model <- model |> summary()
 ```
 
 # Introduction
-This document serves the purpose of explaining to the reader the procedures taken to develop a model that forecasts foreign exchange rates. The data for this project has been sourced [Here](https://www.centralbank.go.ke/forex/). The CBK uploads forex data on `21` currencies. Out of the 21 currencies, this project works with the USD/KES pair. EDA was conducted to the data to discern the possible hypothesis tests and assumptions to be made. Anomalies such as duplicates and wrongly worded characters were identified and dealt with. No missing values were reported. 
+This document serves the purpose of explaining to the reader the procedures taken to develop a model that forecasts foreign exchange rates. The data for this project has been sourced [here](https://www.centralbank.go.ke/forex/). The CBK uploads forex data on `21` currencies. Out of the 21 currencies, this project works with the USD/KES pair. EDA was conducted to the data to discern the possible hypothesis tests and assumptions to be made. Anomalies such as duplicates and wrongly worded characters were identified and dealt with. No missing values were reported. 
 
 The data used to build the model runs from 1st December 2016 upto 13th June 2025. It has ``r nrow(usd)`` observations made on weekdays, excluding public holidays and weekends. All rates are the equivalent value of 1 US Dollar.  
 
