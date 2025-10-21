@@ -7,9 +7,9 @@ I chose the ARIMA model to forecast the rates due to its high predictive perform
 
 ## Analysis
 Some of the core libraries used are
-[]()
-[]()
-[]()
+![](forecast.png)
+![](tidyverse.png)
+![](.png)
 Model evaluation results are found in `usd_forecast_doc.pdf`.
 
 ## Findings & Recommendations
