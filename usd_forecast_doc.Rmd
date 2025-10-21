@@ -5,7 +5,6 @@ date: "October 2025"
 output:
   html_document:
     theme: spacelab
-  pdf_document:
 ---
 
 ```{r setup-chunk, include=FALSE}
@@ -26,7 +25,6 @@ library(rsconnect)
 # html libraries
 # library(thematic)
 # library(plotly)
-# library(kableExtra)
 # library(gtsummary)
 
 # thematic_on(bg = "auto",
@@ -35,7 +33,7 @@ library(rsconnect)
 #             font = "auto")
 
 # Writing a manifest file for upload to Posit
-writeManifest()
+# writeManifest()
 
 # ggplot2 theme set
 theme_set(theme_clean())
@@ -91,14 +89,13 @@ usd$rate |> summary() |> pander()
 ### Time plot
 
 ```{r, time-plot, echo = FALSE, fig.align='center', fig.width=7, fig.height=4}
-# p <- 
-ggplot(data = usd)+
+p <- ggplot(data = usd)+
   geom_line(aes(x = date, y = rate), linewidth = 0.55)+
   labs(x = "Date", y = "Rate (Ksh.)",
        title = paste("Forex rates USD/KSH\n1st December 2016 - 13th June 2025"))
 
 
-# ggplotly(p) |> config(displayModeBar=FALSE)
+ggplotly(p) |> config(displayModeBar=FALSE)
 
 ```
 
@@ -205,8 +202,7 @@ Now, we plot the model's 21 step ahead forecast.
 
 ```{r,forecast-plot, echo = FALSE, fig.align='center', fig.width=6, fig.height=4, message = FALSE}
 
-# p2 <- 
-ggplot()+
+p2 <- ggplot()+
   geom_line(aes(x = date, y = rate), col = "#000", linewidth = 0.55 ,data = usd[c(1508:1585),])+
   geom_line(aes(x = Date ,y = Upper_bound), col = alpha("#008899", 0.7), linetype = 2, data = fcast_table)+
   geom_line(aes(x = Date ,y = Forecast_rate), col = "#008899", linewidth = 0.55, data = fcast_table)+
@@ -214,7 +210,7 @@ ggplot()+
   labs(x = "Time", y = "Rate (Ksh.)",
        title = paste("Forex rate forecast\nJanuary 2023 - May 2023"))
 
-# ggplotly(p2) |> config(displayModeBar = FALSE)
+ggplotly(p2) |> config(displayModeBar = FALSE)
 ```
 
 # Conclusion & Recommendations
