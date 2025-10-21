@@ -21,10 +21,10 @@ library(tseries)
 library(pander)
 library(cowplot)
 library(rsconnect)
+library(plotly)
 
 # html libraries
 # library(thematic)
-# library(plotly)
 # library(gtsummary)
 
 # thematic_on(bg = "auto",
