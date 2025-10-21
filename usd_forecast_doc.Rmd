@@ -21,6 +21,7 @@ library(forecast)
 library(tseries)
 library(pander)
 library(cowplot)
+library(rsconnect)
 
 # html libraries
 # library(thematic)
@@ -32,6 +33,8 @@ library(cowplot)
 #             accent = "auto",
 #             font = "auto")
 
+# Writing a manifest file for upload to Posit
+writeManifest()
 
 # ggplot2 theme set
 theme_set(theme_clean())
@@ -221,4 +224,5 @@ ggplot()+
 
 # References
 - Mong T. U. (2016). Forecasting Foreign Exchange Rate by using ARIMA Model: A Case of VND/USD Exchange Rate. _Research journal of finance and accounting Vol.7(No.12)_ 
+
 
