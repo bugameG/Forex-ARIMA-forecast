@@ -11,5 +11,4 @@ Model evaluation results are found in `usd_forecast_doc.pdf`.
 ## Findings & Recommendations
 Forex data is non-stationary in nature. Therefore in order to fit ARIMA models, there is need to check for stationarity before building. ARIMA models have good predictive metrics required for forecasting models. In conclusion other models can be employed in the forecasting domain such as GARCH and Facebook's prophet model.  
 
-![](forecast.png)  ![](tidy.png)
  
