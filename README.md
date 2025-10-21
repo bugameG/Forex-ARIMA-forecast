@@ -1,1 +1,1 @@
-# Forex-ARIMA-forecast
+# Forex-ARIMA-forecast 💹
