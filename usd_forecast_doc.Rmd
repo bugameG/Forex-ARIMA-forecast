@@ -3,6 +3,7 @@ title: "Forecasting Foreign Exchange rates using an ARIMA Model: A case study of
 author: "Pamba Gift"
 date: "October 2025"
 output:
+  pdf_document:
   html_document:
     theme: spacelab
 ---
@@ -20,19 +21,17 @@ library(forecast)
 library(tseries)
 library(pander)
 library(cowplot)
-library(rsconnect)
 
 # html libraries
 # library(thematic)
-# library(gtsummary)
-
-# thematic_on(bg = "auto",
+# library(plotly)
+# library(kableExtra)
+ 
+# thematic_on(bg = "auto", 
 #             fg = "auto",
 #             accent = "auto",
 #             font = "auto")
 
-# Writing a manifest file for upload to Posit
-# writeManifest()
 
 # ggplot2 theme set
 theme_set(theme_clean())
@@ -63,7 +62,7 @@ about_model <- model |> summary()
 ```
 
 # Introduction
-This document serves the purpose of explaining to the reader the procedures taken to develop a model that forecasts foreign exchange rates. The data for this project has been sourced [here](https://www.centralbank.go.ke/forex/). The CBK uploads forex data on `21` currencies. Out of the 21 currencies, this project works with the USD/KES pair. EDA was conducted to the data to discern the possible hypothesis tests and assumptions to be made. Anomalies such as duplicates and wrongly worded characters were identified and dealt with. No missing values were reported. 
+This document serves the purpose of explaining to the reader the procedures taken to develop a model that forecasts foreign exchange rates. The data for this project has been sourced [Here](https://www.centralbank.go.ke/forex/). The CBK uploads forex data on `21` currencies. Out of the 21 currencies, this project works with the USD/KES pair. EDA was conducted to the data to discern the possible hypothesis tests and assumptions to be made. Anomalies such as duplicates and wrongly worded characters were identified and dealt with. No missing values were reported. 
 
 The data used to build the model runs from 1st December 2016 upto 13th June 2025. It has ``r nrow(usd)`` observations made on weekdays, excluding public holidays and weekends. All rates are the equivalent value of 1 US Dollar.  
 
@@ -72,14 +71,14 @@ The data used to build the model runs from 1st December 2016 upto 13th June 2025
 
 ### Date
 ```{r, date-summary, echo = FALSE}
-usd$date |> summary() |> pander()
+summary(usd$date) |> pander()
 ```
 
 
 ### Rates
 
 ```{r, rate-summary, echo = FALSE}
-usd$rate |> summary() |> pander()
+summary(usd$rate) |> pander()
 ```
 
 
@@ -128,7 +127,7 @@ Pacf <- autoplot(pacf(diff(usd_train, differences = 2), plot = FALSE))+
 plot_grid(Acf, Pacf, ncol = 1)
 ```
 
-Both the ACF and PACF tail off gradually as there exists some significant spikes as the lag increases. In this case a mixed model such as an ARMA model would be of use.
+Both the ACF AND PACF tail off gradually as there exists some significant spikes as the lag increases. In this case a mixed model such as an ARMA model would be of use.
 
 ### Residual analysis
 
@@ -202,7 +201,7 @@ Now, we plot the model's 21 step ahead forecast.
 
 ```{r,forecast-plot, echo = FALSE, fig.align='center', fig.width=6, fig.height=4, message = FALSE}
 
-# p2 <-
+# p2 <- 
 ggplot()+
   geom_line(aes(x = date, y = rate), col = "#000", linewidth = 0.55 ,data = usd[c(1508:1585),])+
   geom_line(aes(x = Date ,y = Upper_bound), col = alpha("#008899", 0.7), linetype = 2, data = fcast_table)+
@@ -222,5 +221,4 @@ ggplot()+
 
 # References
 - Mong T. U. (2016). Forecasting Foreign Exchange Rate by using ARIMA Model: A Case of VND/USD Exchange Rate. _Research journal of finance and accounting Vol.7(No.12)_ 
-
 
