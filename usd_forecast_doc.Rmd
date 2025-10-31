@@ -25,7 +25,7 @@ library(DT)
 library(rsconnect)
 
 # Writing manifest file for upload to Posit Cloud Connect
-# writeManifest()
+writeManifest()
 
 # ggplot2 theme set
 theme_set(theme_clean())
@@ -265,4 +265,5 @@ ggplotly(usd_fcast_plot) |> config(displayModeBar = FALSE)
 
 # References
 - Mong T. U. (2016). Forecasting Foreign Exchange Rate by using ARIMA Model: A Case of VND/USD Exchange Rate. _Research journal of finance and accounting Vol.7(No.12)_ 
+
 
