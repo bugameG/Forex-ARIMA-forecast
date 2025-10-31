@@ -3,7 +3,6 @@ title: "Forecasting Foreign Exchange rates using an ARIMA Model: A case study of
 author: "Pamba Gift"
 date: "October 2025"
 output:
-  pdf_document:
   html_document:
     theme: spacelab
 ---
@@ -21,17 +20,12 @@ library(forecast)
 library(tseries)
 library(pander)
 library(cowplot)
+library(plotly)
+library(DT)
+library(rsconnect)
 
-# html libraries
-# library(thematic)
-# library(plotly)
-# library(kableExtra)
- 
-# thematic_on(bg = "auto", 
-#             fg = "auto",
-#             accent = "auto",
-#             font = "auto")
-
+# Writing manifest file for upload to Posit Cloud Connect
+# writeManifest()
 
 # ggplot2 theme set
 theme_set(theme_clean())
@@ -86,28 +80,42 @@ summary(usd$rate) |> pander()
 
 ### Time plot
 
-```{r, time-plot, echo = FALSE, fig.align='center', fig.width=7, fig.height=4}
-# p <- 
-ggplot(data = usd)+
+```{r, first_time_plot, echo = FALSE, fig.align='center', fig.width=7, fig.height=4}
+usd_plot <- ggplot(data = usd)+
   geom_line(aes(x = date, y = rate), linewidth = 0.55)+
   labs(x = "Date", y = "Rate (Ksh.)",
        title = paste("Forex rates USD/KSH\n1st December 2016 - 13th June 2025"))
 
 
-# ggplotly(p) |> config(displayModeBar=FALSE)
+ggplotly(usd_plot) |> config(displayModeBar=FALSE)
 
 ```
 
 # Methodology
-An ARIMA model was chosen to forecast the Forex rates. Fortunately, the `forecast` library has a function that returns an optimal model. This accelerated the workflow and diagnostics. An ARIMA model can have an auto-regressive coefficient(s) or moving average coefficient(s) or both. In addition ,they allow for differencing if the data to be modelled is non-stationary. The optimal model chosen for this data is the `ARIMA(1,2,1)` with an auto-regressive order of `1`, a moving average order of `1` and a differencing order of `2`. The model can be written as;
+An ARIMA model was chosen to forecast the Forex rates. Fortunately, the `forecast` library has a function that returns an optimal model. This accelerated the workflow and diagnostics. An ARIMA model can have an auto-regressive coefficient(s) or moving average coefficient(s) or both. In addition ,they allow for differencing if the data to be modelled is non-stationary. The optimal model chosen for this data is the `ARIMA(1,2,1)` with an auto-regressive order of `1`, a moving average order of `1` and a differencing order of `2`. Generally an ARIMA model is written as;
 
-$$y_{t} = 2.3198{y}_{t-1}-1.6396{y}_{t-2}+0.3198{y}_{t-3}-0.9845{\epsilon}_{t-1}$$
+$$\Phi(B)(1-B)^{d}y_{t}=\Theta(B)Z_{t}$$
+where:
+
+- $B$ is the backshift operator such that $B^1y_t=y_{t-1}$
+- $d$ is the level of differencing performed
+- $\Phi(B)$ is the autoregressive polynomial 
+- $1-\phi_1B-\phi_2B^2-\cdots-\phi_pB^p$ with $\phi_i$ the AR coefficients for $i=1,2,\cdots,p$ 
+- $\Theta(B)$ is the moving average polynomial $1-\theta_1B-\theta_2B^2-\cdots-\theta_pB^p$ with $\theta_i$ the MA coefficients for $i=1,2,\cdots,q$
+- $Z_t$ is the error term
+  
+
+
+The model has a single AR coefficient of ``r model$coef[1]`` and a single MA coefficient of ``r model$coef[2]``. Plugging the values to the above formula and simplifying, we end up having the model as,
+
+$$ \hat{y_t} = 2.3198y_{t-1} - 1.6396y_{t-2} + 0.3198y_{t-3} + 0.9845Z_{t-1}$$
+
 
 
 # Results and Findings
 
 ## Model building
-The first course of action was to split the data into a training (`75%`) and testing set (`25%`). The training set runs from 1st December 2016 upto 25th April 2023 containing ``r length(usd_train)`` observations. The testing set runs from 26th April 2023 upto 13th July 2025 with ``r length(usd_test)`` observations. The training set facilitated model building and diagnostic checks while the testing set was used to evaluate the model's predictive ability. 
+The first course of action was to split the data into a training (`75%`) and testing set (`25%`). The training set runs from 1st December 2016 upto 25th April 2023 containing ``r length(usd_train)`` observations. The testing set runs from 26th April 2023 to 13th July 2025 with ``r length(usd_test)`` observations. The training set facilitated model building and diagnostic checks while the testing set was used to evaluate the model's predictive ability. 
 
 
 ## Model validation
@@ -118,13 +126,13 @@ This section validates the order used under the ARIMA model `p = 1` and `q = 1`.
 
 
 ```{r, acf1, echo = FALSE, fig.align='center'}
-Acf <- autoplot(acf(diff(usd_train, differences = 2), plot = FALSE))+
+usd_acf <- autoplot(acf(diff(usd_train, differences = 2), plot = FALSE))+
   ggtitle("Autocorrelation Function")
 
-Pacf <- autoplot(pacf(diff(usd_train, differences = 2), plot = FALSE))+
+usd_pacf <- autoplot(pacf(diff(usd_train, differences = 2), plot = FALSE))+
   ggtitle("Partial Autocorrelation Function")
 
-plot_grid(Acf, Pacf, ncol = 1)
+plot_grid(usd_acf, usd_pacf, ncol = 1)
 ```
 
 Both the ACF AND PACF tail off gradually as there exists some significant spikes as the lag increases. In this case a mixed model such as an ARMA model would be of use.
@@ -162,11 +170,11 @@ predictive_metrics |> pander()
   + A __MAPE__ (Mean Absolute Percentage Error) value of ``r predictive_metrics[5]`` shows that on average ,the model's fitted values deviate by about ``r paste(round(predictive_metrics[5]*100,1),"%")`` from the actual values, which is an acceptable value for forecast models.
 
 
-Next, we intend to make a forecast 21 days ahead _i.e_ 26th April 2023 upto 23rd May 2023 with weekends and Labour Day excluded. After making the forecast, we once again check the model's predictive metrics, this time, using the first 21 observations of the testing set. The metrics are shown below; 
+Next, we intend to make a forecast 21 days ahead _i.e_ 26th April 2023 o 23rd May 2023 with weekends and Labour Day excluded. After making the forecast, we once again check the model's predictive metrics, this time, using the first 21 observations of the testing set. The metrics are shown below; 
 
 ```{r, fittedVsActual-predictiveAssessment, echo=FALSE}
-fcast <- forecast(model, h = 21, level = c(95))
-accuracy(fcast$fitted, usd_train[1:21]) |> pander()
+fcast_test <- forecast(model, h = 21, level = c(95))
+accuracy(fcast_test$fitted, usd_train[1:21]) |> pander()
 ```
 
 - Summary
@@ -176,20 +184,20 @@ accuracy(fcast$fitted, usd_train[1:21]) |> pander()
 Below is the table consisting of the forecast values for the period 26th April 2023 upto 25th May 2023 with 95% confidence bounds;
 
 
-```{r, forecast_table, echo = FALSE, warning=FALSE}
+```{r, test_forecast_table, echo = FALSE, warning=FALSE}
 fcast_table <- data.table(
   "Date"=usd$date[c(1586:(1586+20))],
   "Actual_rate"=usd_test[1:21],
-  "Forecast_rate"=fcast$mean[1:21],
-  "Lower_bound"=fcast$lower[1:21],
-  "Upper_bound"=fcast$upper[1:21]
+  "Forecast_rate"=fcast_test$mean[1:21],
+  "Lower_bound"=fcast_test$lower[1:21],
+  "Upper_bound"=fcast_test$upper[1:21]
 )
 
 fcast_table <- fcast_table |> 
   mutate(Abs_Deviation = abs(Actual_rate-Forecast_rate)) |> 
   relocate(Abs_Deviation, .before = Lower_bound)
 
-fcast_table |> kable()
+fcast_table |> kable(col.names = c("date", "actual value (Ksh.)", "fitted value (Ksh.)", "absolute deviation (Ksh.)","lower bound (Ksh.)", "upper bound (Ksh.)"))
 ```
 
 - Summary
@@ -197,21 +205,57 @@ fcast_table |> kable()
   + The largest deviation ``r max(fcast_table$Abs_Deviation)`` was recorded on ``r fcast_table[fcast_table$Abs_Deviation == max(fcast_table$Abs_Deviation),1] |> pull(Date)``
   + The smallest deviation ``r min(fcast_table$Abs_Deviation)`` was recorded on ``r fcast_table[fcast_table$Abs_Deviation == min(fcast_table$Abs_Deviation),1] |> pull(Date)`` 
   
-Now, we plot the model's 21 step ahead forecast.
+  
+## Forecasting
 
-```{r,forecast-plot, echo = FALSE, fig.align='center', fig.width=6, fig.height=4, message = FALSE}
+Now it is time to put the model into use. To do this we generate a 35-business day ahead forecast from 16th June 2025 to 1st August 2025. The forecast values are shown in the table below 
 
-# p2 <- 
-ggplot()+
-  geom_line(aes(x = date, y = rate), col = "#000", linewidth = 0.55 ,data = usd[c(1508:1585),])+
-  geom_line(aes(x = Date ,y = Upper_bound), col = alpha("#008899", 0.7), linetype = 2, data = fcast_table)+
-  geom_line(aes(x = Date ,y = Forecast_rate), col = "#008899", linewidth = 0.55, data = fcast_table)+
-  geom_line(aes(x = Date ,y = Lower_bound), col = alpha("#008899", 0.7), linetype = 2, data = fcast_table)+
-  labs(x = "Time", y = "Rate (Ksh.)",
-       title = paste("Forex rate forecast\nJanuary 2023 - May 2023"))
+```{r, final_forecast_table, echo = FALSE, fig.align='center', fig.width=6, fig.height=4, message = FALSE}
 
-# ggplotly(p2) |> config(displayModeBar = FALSE)
+# Forecast dates 
+start.date <- ymd("2025-06-16")
+all.dates <- seq.Date(from = start.date, 
+                      by = "day", length.out = 47)
+
+fcast_dates <- all.dates[!weekdays(all.dates) %in% c("Saturday","Sunday")]
+
+
+# Refitting the training model to capture the whole dataset 
+model2 <- Arima(ts(usd$rate), model = model)
+
+# Forecast values
+fcast <- forecast(model2, h = 35, level = 95)
+
+# Forecast table for ggplot
+fcast_table2 <- data.table(
+  "date"=c(usd$date, fcast_dates),
+  "rates"=c(usd$rate, fcast$mean),
+  "lower_bound"=c(rep(NA, 2114), fcast$lower),
+  "upper_bound"=c(rep(NA, 2114), fcast$upper)
+)
+
+fcast_table2 |> 
+  datatable(style = "bootstrap4", 
+            colnames = c("date", "rate (Ksh.)", "lower bound (Ksh.)", "upper bound (Ksh.)"))
 ```
+
+The figure below captures the ARIMA forecast with 95% confidence bounds.
+
+```{r, last_time_plot, echo=FALSE, fig.align='center', fig.width=7, fig.height=4}
+usd_fcast_plot <-
+ggplot()+
+  geom_line(aes(x = date, y = rates), col = "#000", linewidth = 0.55 ,data = fcast_table2)+
+  geom_line(aes(x = date ,y = lower_bound), col = alpha("#008899", 0.5), linetype = 2, data = fcast_table2[c(2115:2149),])+
+  geom_line(aes(x = date ,y = rates), col = "#008899", linewidth = 0.55, data = fcast_table2[c(2115:2149),])+
+  geom_line(aes(x = date ,y = upper_bound), col = alpha("#008899", 0.5), linetype = 2, data = fcast_table2[c(2115:2149),])+
+  labs(x = "Time", y = "Rate (Ksh.)",
+       title = paste("Forex rate forecast\n1st December 2016 - 1st August 2025"))
+
+ggplotly(usd_fcast_plot) |> config(displayModeBar = FALSE)
+
+```
+
+
 
 # Conclusion & Recommendations
 
